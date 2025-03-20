@@ -8,7 +8,7 @@ Created on Sun Sep 10 11:15:48 2023
 import os
 import csv
 import shutil
-import drone_bb_simulator
+import drone_bb_simulator2 as drone_bb_simulator
 import numpy as np
 import math
 import time
@@ -31,7 +31,7 @@ visualization_flag = True
 #                     CHOOSE THE CONTROLLER
 # ----------------------------------------------------------------
 
-# controller_type = 'PID' # Check mass_total_estimated
+controller_type = 'PID' # Check mass_total_estimated
 
 # controller_type = 'MRACwithBASELINE'
 
@@ -39,7 +39,7 @@ visualization_flag = True
 
 # controller_type = 'RobustMRACwithBASELINE'
 
-controller_type = 'RobustTwoLayerMRACwithBASELINE'
+# controller_type = 'RobustTwoLayerMRACwithBASELINE'
 
 # controller_type = 'HybridMRACwithBASELINE'
 
