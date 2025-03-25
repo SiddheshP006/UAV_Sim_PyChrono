@@ -9,7 +9,7 @@ class rk4:
   def __init__(self):
     print("Integrator CLASS")
   
-  def rk4singlestep(fun, dt, t0, y0, params):
+  def rk4singlestep(fun, dt, t0, y0, gains_instances,odeInputs):
       """
       This function does a single 4th-order Runge-Kutta integration step.
   
@@ -33,9 +33,9 @@ class rk4:
   
       """
       
-      f1 = fun(t0, y0, params)
-      f2 = fun(t0 + dt /2, y0 + (dt / 2) * f1, params)
-      f3 = fun(t0 + dt /2, y0 + (dt / 2) * f2, params)
-      f4 = fun(t0 + dt, y0 + dt * f3, params)
+      f1 = fun(t0, y0, gains_instances,odeInputs)
+      f2 = fun(t0 + dt /2, y0 + (dt / 2) * f1, gains_instances,odeInputs)
+      f3 = fun(t0 + dt /2, y0 + (dt / 2) * f2, gains_instances,odeInputs)
+      f4 = fun(t0 + dt, y0 + dt * f3, gains_instances,odeInputs)
       yout = y0 + (dt / 6) * (f1 + 2 * f2 + 2 * f3 + f4)
       return yout
