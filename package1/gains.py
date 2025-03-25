@@ -19,6 +19,8 @@ class Gains:
     # RotMat_X_PI_2.SetMatr(RotMat_X_PI_2_list)
     RotMat_X_PI_2_array = np.array(RotMat_X_PI_2_list)
     
+    
+    
     # Rotation Matrix that represents a fixed rotation of -PI/2 rad around the X-Axis
     RotMat_X_PI_2_tran_array = np.transpose(RotMat_X_PI_2_array)
     
