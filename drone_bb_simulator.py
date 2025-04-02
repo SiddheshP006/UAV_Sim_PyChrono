@@ -1744,36 +1744,77 @@ def WrapperMain_function(target_folder, controller_type, wrapper_control_paramet
                 
                 ############################## PID ###############################
                 DATA_vector = np.zeros((size_DATA,1))
-                DATA_vector[0] = time_now
-                DATA_vector[1] = simulation_time
-                DATA_vector[2:5] = translational_position_in_I
-                DATA_vector[5:8] = translational_velocity_in_I
-                DATA_vector[8] = roll
-                DATA_vector[9] = pitch
-                DATA_vector[10] = yaw
-                DATA_vector[11:14] = angular_velocity
-                DATA_vector[14] = roll_ref
-                DATA_vector[15] = pitch_ref
-                DATA_vector[16] = yaw_ref
-                DATA_vector[17] = roll_ref_dot
-                DATA_vector[18] = pitch_ref_dot
-                DATA_vector[19] = yaw_ref_dot
-                DATA_vector[20] = roll_ref_ddot
-                DATA_vector[21] = pitch_ref_ddot
-                DATA_vector[22] = yaw_ref_ddot
-                DATA_vector[23:26] = translational_position_in_I_user
-                DATA_vector[26:29] = translational_velocity_in_I_user
-                DATA_vector[29:32] = translational_acceleration_in_I_user
+                DATA_vector[0] = time_now                              # 1. Initial timestamp
+                DATA_vector[1] = simulation_time                       # 2. Current time
+                DATA_vector[2:5] = translational_position_in_I_user    # 3–5. User-defined position x, y, z
+                DATA_vector[5:8] = translational_velocity_in_I_user    # 6–8. User-defined velocity x, y, z
+                DATA_vector[8:11] = translational_acceleration_in_I_user # 9–11. User-defined acceleration x, y, z
+                DATA_vector[11] = yaw                                  # 12. User-defined yaw
+                DATA_vector[12] = yaw_ref_dot                          # 13. User-defined yaw_dot
+                DATA_vector[13] = yaw_ref_ddot                         # 14. User-defined yaw_dot_dot
+                DATA_vector[14:17] = translational_position_in_I       # translational position in I (x, y, z)
+                DATA_vector[17:20] = translational_velocity_in_I       # translational velocity in I (x, y, z)
+
+                DATA_vector[20] = roll
+                DATA_vector[21] = pitch
+
+                DATA_vector[22:25] = angular_velocity                  # angular velocity (roll rate, pitch rate, yaw rate)
+
+                DATA_vector[25] = roll_ref
+                DATA_vector[26] = pitch_ref
+                DATA_vector[27] = yaw_ref
+
+                DATA_vector[28] = roll_ref_dot
+                DATA_vector[29] = pitch_ref_dot
+
+                DATA_vector[30] = roll_ref_ddot
+                DATA_vector[31] = pitch_ref_ddot
+
                 DATA_vector[32] = mu_x
                 DATA_vector[33] = mu_y
                 DATA_vector[34] = mu_z
+
                 DATA_vector[35] = u1
                 DATA_vector[36] = u2
                 DATA_vector[37] = u3
                 DATA_vector[38] = u4
-                DATA_vector[39:47] = T.reshape(8,1)
-                
+
+                DATA_vector[39:47] = T.reshape(8,1)                    # thrusts from 8 rotors
                 DATA = np.append(DATA,np.resize(DATA_vector,(size_DATA,1)), axis=1)
+
+# =============================================================================
+#                 DATA_vector = np.zeros((size_DATA,1))
+#                 DATA_vector[0] = time_now
+#                 DATA_vector[1] = simulation_time
+#                 DATA_vector[2:5] = translational_position_in_I
+#                 DATA_vector[5:8] = translational_velocity_in_I
+#                 DATA_vector[8] = roll
+#                 DATA_vector[9] = pitch
+#                 DATA_vector[10] = yaw
+#                 DATA_vector[11:14] = angular_velocity
+#                 DATA_vector[14] = roll_ref
+#                 DATA_vector[15] = pitch_ref
+#                 DATA_vector[16] = yaw_ref
+#                 DATA_vector[17] = roll_ref_dot
+#                 DATA_vector[18] = pitch_ref_dot
+#                 DATA_vector[19] = yaw_ref_dot
+#                 DATA_vector[20] = roll_ref_ddot
+#                 DATA_vector[21] = pitch_ref_ddot
+#                 DATA_vector[22] = yaw_ref_ddot
+#                 DATA_vector[23:26] = translational_position_in_I_user
+#                 DATA_vector[26:29] = translational_velocity_in_I_user
+#                 DATA_vector[29:32] = translational_acceleration_in_I_user
+#                 DATA_vector[32] = mu_x
+#                 DATA_vector[33] = mu_y
+#                 DATA_vector[34] = mu_z
+#                 DATA_vector[35] = u1
+#                 DATA_vector[36] = u2
+#                 DATA_vector[37] = u3
+#                 DATA_vector[38] = u4
+#                 DATA_vector[39:47] = T.reshape(8,1)
+#                 
+#                 DATA = np.append(DATA,np.resize(DATA_vector,(size_DATA,1)), axis=1)
+# =============================================================================
                 ###################################################################
                      
             
