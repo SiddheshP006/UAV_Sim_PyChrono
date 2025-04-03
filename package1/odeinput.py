@@ -17,7 +17,8 @@ class ode_inputs:
         
         self.roll = euler_angles[0]
         self.pitch = euler_angles[1]
-        self.yaw = euler_angles[2]
+        #self.yaw = euler_angles[2]
+        self.yaw=0
         
         self.yaw_ref = yaw_ref
         self.yaw_ref_dot = yaw_ref_dot
@@ -39,3 +40,24 @@ class ode_inputs:
         #self.angular_error = np.array([roll - roll_ref, pitch - pitch_ref, (((yaw - yaw_ref + PI) % (2*PI)) - PI)]).reshape(3,1)
         self.x_tran = np.append(self.translational_position_in_I, self.translational_velocity_in_I, axis=0)
         
+    def update(self,euler_angles, yaw_ref, yaw_ref_dot, yaw_ref_ddot, 
+               angular_velocity, angular_acceleration, translational_position_in_I, 
+               translational_velocity_in_I, translational_position_in_I_user, 
+               translational_velocity_in_I_user, translational_acceleration_in_I_user):
+        self.roll = euler_angles[0]
+        self.pitch = euler_angles[1]
+        self.yaw = euler_angles[2]
+        self.yaw_ref = yaw_ref
+        self.yaw_ref_dot = yaw_ref_dot
+        self.yaw_ref_ddot = yaw_ref_ddot
+        self.angular_velocity = angular_velocity
+        self.angular_acceleration = angular_acceleration
+        self.translational_position_in_I = translational_position_in_I
+        self.translational_velocity_in_I = translational_velocity_in_I
+        self.translational_position_in_I_user = translational_position_in_I_user
+        self.translational_velocity_in_I_user = translational_velocity_in_I_user
+        self.translational_acceleration_in_I_user = translational_acceleration_in_I_user
+        
+        self.translational_position_error = self.translational_position_in_I - self.translational_position_in_I_user
+        #self.angular_error = np.array([roll - roll_ref, pitch - pitch_ref, (((yaw - yaw_ref + PI) % (2*PI)) - PI)]).reshape(3,1)
+        self.x_tran = np.append(self.translational_position_in_I, self.translational_velocity_in_I, axis=0)

@@ -10,13 +10,14 @@ import numpy as np
 from package1.functions import *
 
 PI = math.pi
-#dddddd
+
 
 class PID_controller:
-    def __init__(self, gains_instance, ode_instance):
+    def __init__(self, gains_instance, ode_instance,flight_params_instance):
         print("PID controller CLASS")
         self.odeInputs = ode_instance  # Store ode_instance inside the class
         self.gains_instance = gains_instance
+        self.params=flight_params_instance        
 
     def ode(self, t,y,ode_instance):
         """
@@ -36,19 +37,19 @@ class PID_controller:
         integral_position_tracking = y[4:7]
         integral_angular_error = y[7:10]
 
-        """self.mu_tran = self.gains_instance.mass_total_estimated * (
+        """self.mu_tran = self.flight_params_instance.mass_total_estimated * (
             -self.gains_instance.KP_tran * self.odeInputs.translational_position_error
             - self.gains_instance.KD_tran * (self.odeInputs.translational_velocity_in_I - self.odeInputs.translational_velocity_in_I_user)
             - self.gains_instance.KI_tran * integral_position_tracking
             + self.odeInputs.translational_acceleration_in_I_user
         )"""
         print(integral_position_tracking.shape)
-        self.mu_tran = self.gains_instance.mass_total_estimated * (
+        self.mu_tran = self.params.mass_total_estimated * (
             -self.gains_instance.KP_tran * self.odeInputs.translational_position_error
             - self.gains_instance.KD_tran * (self.odeInputs.translational_velocity_in_I - self.odeInputs.translational_velocity_in_I_user)
             - self.gains_instance.KI_tran * integral_position_tracking
             + self.odeInputs.translational_acceleration_in_I_user
-            )
+            ).reshape(3,1)
 
 
         self.mu_x = self.mu_tran[0]
@@ -56,14 +57,14 @@ class PID_controller:
         self.mu_z = self.mu_tran[2]
         
         self.u1 = math.sqrt(
-            self.mu_x**2 + self.mu_y**2 + (self.gains_instance.mass_total_estimated * self.gains_instance.G_acc - self.mu_z) ** 2
+            self.mu_x**2 + self.mu_y**2 + (self.params.mass_total_estimated * self.params.G_acc - self.mu_z) ** 2
         )
 
         calculation_var_A = -(1 / self.u1) * (self.mu_x * math.sin(self.odeInputs.yaw_ref) - self.mu_y * math.cos(self.odeInputs.yaw_ref))
         self.odeInputs.roll_ref = math.atan2(calculation_var_A, math.sqrt(1 - calculation_var_A**2))
         self.odeInputs.pitch_ref = math.atan2(
             -(self.mu_x * math.cos(self.odeInputs.yaw_ref) + self.mu_y * math.sin(self.odeInputs.yaw_ref)),
-            (self.gains_instance.mass_total_estimated * self.gains_instance.G_acc - self.mu_z),
+            (self.params.mass_total_estimated * self.params.G_acc - self.mu_z),
         )
 
         internal_state_differentiator_phi_ref_diff = self.gains_instance.A_phi_ref * state_phi_ref_diff + self.gains_instance.B_phi_ref * self.odeInputs.roll_ref
@@ -104,8 +105,8 @@ class PID_controller:
         self.angular_error_dot = self.angular_position_dot - self.angular_position_ref_dot
 
         self.Moment = (
-            np.cross(self.odeInputs.angular_velocity.ravel(), (self.gains_instance.I_matrix_estimated * self.odeInputs.angular_velocity).ravel()).reshape(3, 1)
-            + self.gains_instance.I_matrix_estimated * (
+            np.cross(self.odeInputs.angular_velocity.ravel(), (self.params.I_matrix_estimated * self.odeInputs.angular_velocity).ravel()).reshape(3, 1)
+            + self.params.I_matrix_estimated * (
                 -self.gains_instance.KP_rot * self.angular_error
                 - self.gains_instance.KD_rot * self.angular_error_dot
                 - self.gains_instance.KI_rot * integral_angular_error
@@ -116,7 +117,7 @@ class PID_controller:
         self.u2 = self.Moment[0].item()
         self.u3 = self.Moment[1].item()
         self.u4 = self.Moment[2].item()
-        print(self.odeInputs.roll)
+        print(self.odeInputs.yaw)
         
         self.dy = np.zeros(10)  # Ensure dy is properly initialized
         self.dy[0:2] = internal_state_differentiator_phi_ref_diff.flatten()
@@ -124,4 +125,4 @@ class PID_controller:
         self.dy[4:7] = self.odeInputs.translational_position_error.flatten()
         self.dy[7:10] = self.angular_error.ravel()  # Flatten for correct array structure
 
-        return self.dy  # Ensure dy is returned
+        return self.dy

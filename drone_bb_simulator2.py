@@ -22,6 +22,7 @@ import pychrono.postprocess as postprocess
 import pychrono.irrlicht as irr
 import pytz
 import csv
+import logging
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -36,9 +37,30 @@ from package1.trajectory import *
 from package1.controller.PID.pid import PID_controller
 from package1.Pid_function import rk4
 from package1.odeinput import ode_inputs
+from package1.flight_params import flight_params
 
 PI = math.pi
 
+#Instances
+flight_params_instance=flight_params()
+gains_instance=Gains()
+
+roll, pitch, yaw = 0.0, 0.0, 0.0
+yaw_ref, yaw_ref_dot, yaw_ref_ddot = 0.0, 0.0, 0.0
+angular_velocity = np.zeros((3, 1))
+angular_acceleration = np.zeros((3, 1))
+translational_position_in_I = np.zeros((3, 1))
+translational_velocity_in_I = np.zeros((3, 1))
+translational_position_in_I_user = np.zeros((3, 1))
+translational_velocity_in_I_user = np.zeros((3, 1))
+translational_acceleration_in_I_user = np.zeros((3, 1))
+	
+#ode_instance = ode_inputs([roll, pitch, yaw], yaw_ref, yaw_ref_dot, yaw_ref_ddot, angular_velocity, angular_acceleration, translational_position_in_I,
+#              translational_velocity_in_I, translational_position_in_I_user, translational_velocity_in_I_user, translational_acceleration_in_I_user)
+
+ode_instance=ode_inputs([roll, pitch, yaw], yaw_ref, yaw_ref_dot, yaw_ref_ddot, angular_velocity, angular_acceleration, translational_position_in_I, translational_velocity_in_I, translational_position_in_I_user, translational_velocity_in_I_user, translational_acceleration_in_I_user)
+
+pid_instance=PID_controller(gains_instance,ode_instance,flight_params_instance)
 
 def WrapperMain_function(target_folder, controller_type, wrapper_control_parameters, wrapper_foldername, wrapper_filename, max_simulation_time, csv_file_path_abnormalities, Wrapper_execution, visualization_flag):
     print("Wrapper loop starts here")
@@ -127,15 +149,13 @@ def WrapperMain_function(target_folder, controller_type, wrapper_control_paramet
             os.mkdir(folder_path)
             print(f"Folder '{wrapper_foldername}' created successfully.")
         
-        wrapper_filename_csv = wrapper_filename  + ".csv"
-        csv_file_path = os.path.join(folder_path, wrapper_filename_csv)
+        wrapper_filename_csv = wrapper_filename  + ".log"
+        log_file_path = os.path.join(folder_path, wrapper_filename_log)
         
         
         #Wrapper parameters passed-------------------------------------
     my_ball_density = wrapper_control_parameters["my_ball_density"]
-    # %% Creating an instance of the gains class
 
-    gains_instance=Gains()		
     #%% Solver parameters
     
     #my_system.SetMaxPenetrationRecoverySpeed(1.00)
@@ -152,7 +172,7 @@ def WrapperMain_function(target_folder, controller_type, wrapper_control_paramet
 # %%
 
     #%% System and General parameters
-    my_system.Set_G_acc(chrono.ChVectorD(0,-gains_instance.G_acc,0))
+    my_system.Set_G_acc(chrono.ChVectorD(0,-flight_params_instance.G_acc,0))
     # my_system.Set_G_acc(chrono.ChVectorD(0,0,0)) # No Gravity
     position_local_pixhawk = chrono.ChVectorD(0.0293, 0.04925, 0) # position of the "pixhawk's center" wrt local frame
     position_pixhawk_fromCOG = chrono.ChVectorD(-0.0214807964657055, 0.0779592340719906, -0.0000487571767365452) # position of the "pixhawk's center" wrt the COG of the drone frame
@@ -539,13 +559,13 @@ def WrapperMain_function(target_folder, controller_type, wrapper_control_paramet
     #!!!                     CHOOSE THE TRAJECTORY
     # ----------------------------------------------------------------
     
-    trajectory_type = 'circular_trajectory'
+    # trajectory_type = 'circular_trajectory'
     
     # trajectory_type = 'hover_trajectory'
     
     # trajectory_type = 'square_trajectory'
     
-    "trajectory_type = 'roundedRectangle_trajectory'"
+    trajectory_type = 'roundedRectangle_trajectory'
     
     # trajectory_type = 'piecewisePolynomial_trajectory'
     
@@ -1190,14 +1210,13 @@ def WrapperMain_function(target_folder, controller_type, wrapper_control_paramet
         angular_acceleration = np.array(chvector_to_list(Wacc_pixhawk_LOC)).reshape(3,1)
         x_tran = np.append(translational_position_in_I, translational_velocity_in_I, axis=0)
 
-        
-        ode_instance = ode_inputs([roll, pitch, yaw], yaw_ref, yaw_ref_dot, yaw_ref_ddot, angular_velocity, angular_acceleration, translational_position_in_I,
+        ode_instance.update([roll, pitch, yaw], yaw_ref, yaw_ref_dot, yaw_ref_ddot, angular_velocity, angular_acceleration, translational_position_in_I,
                       translational_velocity_in_I, translational_position_in_I_user, translational_velocity_in_I_user, translational_acceleration_in_I_user)
-        pid_instance=PID_controller(gains_instance,ode_instance)
+        
         ################## 
         # Applying AERODYNAMIC FORCE to the drone
         aerodynamic_velocity = np.array(chvector_to_list(vel_pixhawk_LOC)).reshape(3,1)
-        aerodynamic_force = -0.5 * gains_instance.air_density_estimated * gains_instance.surface_area_estimated * gains_instance.drag_coefficient_matrix_estimated * aerodynamic_velocity * LA.norm(aerodynamic_velocity)
+        aerodynamic_force = -0.5 * flight_params_instance.air_density_estimated * flight_params_instance.surface_area_estimated * flight_params_instance.drag_coefficient_matrix_estimated * aerodynamic_velocity * LA.norm(aerodynamic_velocity)
         my_frame.Accumulate_force(chrono.ChVectorD(aerodynamic_force[0].item(),aerodynamic_force[1].item(),aerodynamic_force[2].item()),chrono.ChVectorD(-0.006329836449057219, -0.05730872796244302, 3.945863912075595e-05),True)
         
         # Applying a constant WIND FORCE to the drone, expressed in pychrono global coordinate
@@ -1205,13 +1224,15 @@ def WrapperMain_function(target_folder, controller_type, wrapper_control_paramet
         
         ##################
         if Wrapper_execution == True:
-            with open(csv_file_path, mode='w', newline='') as csv_file_wrapper:
-                csv_writer = csv.writer(csv_file_wrapper)
+            with open(log_file_path, mode='w', newline='') as log_file_wrapper:
                 date = datetime.datetime.now(pytz.timezone('America/New_York'))
-                introductory_fields = [["Execution Date:", str(date.month) +"-" + str(date.day) +"-" + str(date.year) ,"", "Simulation start time [s]:", str(date.hour)+":"+ str(date.minute)+":"+ str(date.second)], 
-                                       ["Controller type:", controller_type ,"","Trajectory:", trajectory_type],
-                                       ["Wrapper parameter:", "Ball density:", my_ball_density]]
-                csv_writer.writerows(introductory_fields)
+    
+                # Write introductory information to the log file
+                log_file.write(f"Execution Date: {date.month}-{date.day}-{date.year}\n")
+                log_file.write(f"Simulation start time [s]: {date.hour}:{date.minute}:{date.second}\n")
+                log_file.write(f"Controller type: {controller_type}\n")
+                log_file.write(f"Trajectory: {trajectory_type}\n")
+                log_file.write(f"Wrapper parameter: {my_ball_density}\n\n")
                 if controller_type == "PID":
                     header_csv = ["Real Time[s]","Simulation time[s]", "translational_position_in_Ix[m]","translational_position_in_Iy[m]","translational_position_in_Iz[m]",
                                          "translational_velocity_in_Ix[m/s]","translational_velocity_in_Iy[m/s]","translational_velocity_in_Iz[m/s]", "roll[rad]","pitch[rad]","yaw[rad]",
@@ -1257,12 +1278,12 @@ def WrapperMain_function(target_folder, controller_type, wrapper_control_paramet
                                   "angular_position_dot_x[rad/s]", "angular_position_dot_y[rad/s]", "angular_position_dot_z[rad/s]"]
             
                 
-                len_header = len(header_csv) +1
-                column_serial_number =[]
-                for i in range(1,len_header):
-                    column_serial_number.append(i)
-                csv_writer.writerow(column_serial_number)
-                csv_writer.writerow(header_csv)
+                log_file.write("Header:\n")
+                log_file.write(", ".join(header_log) + "\n")
+    
+        else:
+            # You can add other headers for other controller types here
+            pass
             
         
         #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
@@ -1605,14 +1626,31 @@ def WrapperMain_function(target_folder, controller_type, wrapper_control_paramet
           
           # my_frame_ctr = my_frame.GetContactTorque()
           # print('Contact Torque Drone Frame: ', my_box_ctr, '\n')
+    #if Wrapper_execution == True:
+     #   DATA = DATA.T
+        #with open(csv_file_path, mode='a', newline='') as csv_file_wrapper:
+        #    csv_writer = csv.writer(csv_file_wrapper)
+        #    csv_writer.writerow(["Time","Sum", "Average","Product","Maximum","Minimum"])
+         #   csv_writer.writerows(DATA)                   
+      #  with open("logfile","a",newline='') as f:
+       #     f.write(DATA)
+        #    if f.tell()==0:
+         #       f.write(header_csv)
     if Wrapper_execution == True:
-        DATA = DATA.T
-        with open(csv_file_path, mode='a', newline='') as csv_file_wrapper:
-            csv_writer = csv.writer(csv_file_wrapper)
-            #csv_writer.writerow(["Time","Sum", "Average","Product","Maximum","Minimum"])
-            csv_writer.writerows(DATA)                   
-                       
-
+        DATA = DATA.T  # Transpose the matrix if necessary to get the correct format
+        
+        # Open the CSV file in append mode
+        with open("logfile.log", mode='a', newline='') as f:
+            csv_writer = csv.writer(f)
+            
+            # Write header if the file is empty (f.tell() == 0)
+            if f.tell() == 0:
+                csv_writer.writerow(header_csv)  # Write the header row
+            
+            # Write the data rows
+            for row in DATA:
+                csv_writer.writerow(row)  # Write each row of data
+    
     #%% Plots and Post-processing
     
     # state_pixhawk_GLOB_array = list_to_array(state_pixhawk_GLOB)
