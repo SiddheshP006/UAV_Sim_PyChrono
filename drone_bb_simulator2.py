@@ -565,9 +565,9 @@ def WrapperMain_function(target_folder, controller_type, wrapper_control_paramet
     
     # trajectory_type = 'square_trajectory'
     
-    trajectory_type = 'roundedRectangle_trajectory'
+    #trajectory_type = 'roundedRectangle_trajectory'
     
-    # trajectory_type = 'piecewisePolynomial_trajectory'
+    trajectory_type = 'piecewisePolynomial_trajectory'
     
     # ----------------------------------------------------------------
     #                     %%%%%%%%%%%%%%%%%%%%%%
@@ -825,10 +825,8 @@ def WrapperMain_function(target_folder, controller_type, wrapper_control_paramet
     
     dy = np.zeros((number_of_states,1))
     y = np.zeros((number_of_states,1))
-    if controller_type == 'PID':
-        # Gains PID
-        #Instance
-        " "
+    print("Size of y before passing")
+    print(y.shape)
 
     
     my_frame_pos_GLOB = my_frame.GetPos()

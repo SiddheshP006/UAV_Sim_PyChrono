@@ -17,13 +17,16 @@ class PID_controller:
         print("PID controller CLASS")
         self.odeInputs = ode_instance  # Store ode_instance inside the class
         self.gains_instance = gains_instance
-        self.params=flight_params_instance        
+        self.params=flight_params_instance 
+        self.dy = np.zeros((10,1))
 
     def ode(self, t,y,ode_instance):
         """
         Defines the system of equations of the PID controller that need to be integrated.
         """
-        y = np.zeros((10,1))
+        #y = np.zeros((10,1)
+        print("Inside the function")
+        print(y.shape)
         
         # Access odeInputs variables directly
         self.odeInputs.translational_position_error = (
@@ -33,9 +36,13 @@ class PID_controller:
         # Reference variables for calculations
         
         state_phi_ref_diff = y[0:2]
+        print(y.shape)
         state_theta_ref_diff = y[2:4]
+        print(y.shape)
         integral_position_tracking = y[4:7]
+        print(y.shape)
         integral_angular_error = y[7:10]
+        print(y.shape)
 
         """self.mu_tran = self.flight_params_instance.mass_total_estimated * (
             -self.gains_instance.KP_tran * self.odeInputs.translational_position_error
@@ -43,7 +50,7 @@ class PID_controller:
             - self.gains_instance.KI_tran * integral_position_tracking
             + self.odeInputs.translational_acceleration_in_I_user
         )"""
-        print(integral_position_tracking.shape)
+        
         self.mu_tran = self.params.mass_total_estimated * (
             -self.gains_instance.KP_tran * self.odeInputs.translational_position_error
             - self.gains_instance.KD_tran * (self.odeInputs.translational_velocity_in_I - self.odeInputs.translational_velocity_in_I_user)
@@ -117,12 +124,12 @@ class PID_controller:
         self.u2 = self.Moment[0].item()
         self.u3 = self.Moment[1].item()
         self.u4 = self.Moment[2].item()
-        print(self.odeInputs.yaw)
         
-        self.dy = np.zeros(10)  # Ensure dy is properly initialized
-        self.dy[0:2] = internal_state_differentiator_phi_ref_diff.flatten()
-        self.dy[2:4] = internal_state_differentiator_theta_ref_diff.flatten()
-        self.dy[4:7] = self.odeInputs.translational_position_error.flatten()
-        self.dy[7:10] = self.angular_error.ravel()  # Flatten for correct array structure
+        
+        #self.dy = np.zeros(10)  # Ensure dy is properly initialized
+        self.dy[0:2] = internal_state_differentiator_phi_ref_diff
+        self.dy[2:4] = internal_state_differentiator_theta_ref_diff
+        self.dy[4:7] = self.odeInputs.translational_position_error
+        self.dy[7:10] = self.angular_error  # Flatten for correct array structure
 
         return self.dy
