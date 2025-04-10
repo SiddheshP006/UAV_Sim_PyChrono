@@ -38,6 +38,7 @@ from package1.controller.PID.pid import PID_controller
 from package1.Pid_function import rk4
 from package1.odeinput import ode_inputs
 from package1.flight_params import flight_params
+from Logger_PID import log_data_vector_with_header
 
 PI = math.pi
 
@@ -1398,47 +1399,108 @@ def WrapperMain_function(target_folder, controller_type, wrapper_control_paramet
                 
                 ############################## PID ###############################
                 DATA_vector = np.zeros((size_DATA,1))
-                DATA_vector[0] = time_now
-                DATA_vector[1] = simulation_time
-                DATA_vector[2:5] = translational_position_in_I
-                DATA_vector[5:8] = translational_velocity_in_I
-                DATA_vector[8] = roll
-                DATA_vector[9] = pitch
-                DATA_vector[10] = yaw
-                DATA_vector[11:14] = angular_velocity
-                DATA_vector[14] = roll_ref
-                DATA_vector[15] = pitch_ref
-                DATA_vector[16] = yaw_ref
-                #DATA_vector[17] = roll_ref_dot
-                #DATA_vector[18] = pitch_ref_dot
-                DATA_vector[19] = yaw_ref_dot
-                #DATA_vector[20] = roll_ref_ddot
-                #DATA_vector[21] = pitch_ref_ddot
-                DATA_vector[22] = yaw_ref_ddot
-                DATA_vector[23:26] = translational_position_in_I_user
-                DATA_vector[26:29] = translational_velocity_in_I_user
-                DATA_vector[29:32] = translational_acceleration_in_I_user
-                DATA_vector[32] = mu_x
-                DATA_vector[33] = mu_y
-                DATA_vector[34] = mu_z
-                DATA_vector[35] = pid_instance.u1
-                DATA_vector[36] = pid_instance.u2
-                DATA_vector[37] = pid_instance.u3
-                DATA_vector[38] = pid_instance.u4
-                DATA_vector[39:47] = T.reshape(8,1)
+                DATA_vector[0] = simulation_time                            # 1. Initial timestamp
+                DATA_vector[1] = time_now                     # 2. Current time
+                DATA_vector[2:5] = translational_position_in_I_user    # 3–5. User-defined position x, y, z
+                DATA_vector[5:8] = translational_velocity_in_I_user    # 6–8. User-defined velocity x, y, z
+                DATA_vector[8:11] = translational_acceleration_in_I_user # 9–11. User-defined acceleration x, y, z
+                DATA_vector[11] = yaw_ref                                # 12. User-defined yaw yaw ref goes here
+                DATA_vector[12] = yaw_ref_dot                          # 13. User-defined yaw_dot
+                DATA_vector[13] = yaw_ref_ddot                         # 14. User-defined yaw_dot_dot
+                DATA_vector[14] = float('NaN')
+                DATA_vector[15:18] = translational_position_in_I       # translational position in I (x, y, z)
+                DATA_vector[18:22] = float('NaN')
+                DATA_vector[22:25] = translational_velocity_in_I       # translational velocity in I (x, y, z)
+                DATA_vector[25:28] = angular_velocity
+
+                DATA_vector[28] = roll
+                DATA_vector[29] = pitch
+                DATA_vector[30] = yaw
+                DATA_vector[31] = float('NaN')  
+                DATA_vector[32] = float('NaN')  #mu tran raw x
+                DATA_vector[33] = float('NaN') #mu tran raw y
+                DATA_vector[34] = float('NaN') #mu tran raw z
+                DATA_vector[35] = mu_x
+                DATA_vector[36] = mu_y
+                DATA_vector[37] = mu_z
+                DATA_vector[38] = pid_instance.u1
+                DATA_vector[39] = pid_instance.u2
+                DATA_vector[40] = pid_instance.u3
+                DATA_vector[41] = pid_instance.u4
+                DATA_vector[42] = roll_ref   # roll desired
+                DATA_vector[43] = pitch_ref   #pitch desired
+                DATA_vector[44] = roll_ref_dot  #roll_dot desired
+                DATA_vector[45] = pitch_ref_dot   #pitch_dot desired
+                DATA_vector[46] = roll_ref_ddot  #roll_dot_dot desired
+                DATA_vector[47] = pitch_ref_ddot  #pitch_dot_dot desired
+                DATA_vector[48] = float('NaN')   #roll_dot
+                DATA_vector[49] = float('NaN')   #pitch_dot
+                DATA_vector[50] = float('NaN')   #yaw_dot
+                DATA_vector[51] = float('NaN')   #quad copter
+                DATA_vector[52] = float('NaN')   #
+                DATA_vector[53] = float('NaN')   #
+                DATA_vector[54] = float('NaN')   #
+                DATA_vector[55] = float('NaN')   #
+                DATA_vector[56] = float('NaN')   #
+                DATA_vector[57] = float('NaN')   #
+                DATA_vector[58] = float('NaN')   #
+                DATA_vector[59:67] = T.reshape(8,1) # thrust 8 rotors
+                DATA_vector[67] = float('NaN')   # down from this is normized thrust 1
+                DATA_vector[68] = float('NaN')   #2
+                DATA_vector[69] = float('NaN')   #3
+                DATA_vector[70] = float('NaN')   #4
+                DATA_vector[71] = float('NaN')   #5
+                DATA_vector[72] = float('NaN')   #6
+                DATA_vector[73] = float('NaN')   #7
+                DATA_vector[74] = float('NaN')   #8
+                DATA_vector[75] = float('NaN')   # roll error
+                DATA_vector[76] = float('NaN')   # pitch error
+                DATA_vector[77] = float('NaN')   #yaw error
+               
+                DATA_vector[78] = float('NaN')  # outer loop prop x
+                DATA_vector[79] = float('NaN')  # outer loop prop y
+                DATA_vector[80] = float('NaN')  # outer loop prop z
                 
+                DATA_vector[81] = float('NaN')  # outer loop int x
+                DATA_vector[82] = float('NaN')  # outer loop int y
+                DATA_vector[83] = float('NaN')  # outer loop int z
+                
+                DATA_vector[84] = float('NaN')  # outer loop deriv x
+                DATA_vector[85] = float('NaN')  # outer loop deriv y
+                DATA_vector[86] = float('NaN')  # outer loop deriv z
+
+                DATA_vector[88] = float('NaN')  # outer loop dyn inv x
+                DATA_vector[89] = float('NaN')  # outer loop dyn inv y
+                DATA_vector[90] = float('NaN')  # outer loop dyn inv z
+
+                # Inner loop PID terms
+                DATA_vector[91] = float('NaN')  # inner loop prop x
+                DATA_vector[92] = float('NaN')  # inner loop prop y
+                DATA_vector[93] = float('NaN')  # inner loop prop z
+                
+                DATA_vector[94] = float('NaN')  # inner loop int x
+                DATA_vector[95] = float('NaN')  # inner loop int y
+                DATA_vector[96] = float('NaN')  # inner loop int z
+                
+                DATA_vector[97] = float('NaN')  # inner loop deriv x
+                DATA_vector[98] = float('NaN')  # inner loop deriv y
+                DATA_vector[99] = float('NaN')  # inner loop deriv z
+
+                DATA_vector[100] = float('NaN')  # inner loop dyn inv x
+                DATA_vector[101] = float('NaN')  # inner loop dyn inv y
+                DATA_vector[102] = float('NaN')  # inner loop dyn inv z
+
+
+
                 DATA = np.append(DATA,np.resize(DATA_vector,(size_DATA,1)), axis=1)
+                log_data_vector_with_header(DATA_vector)
                 ###################################################################
                      
             
             # If the controller parameters go beyond 10^6, break the simulation
             if Wrapper_execution == True:
-                if abs(u1)>(10**6) or abs(u2)>(10**6) or abs(u3)>(10**6) or abs(u4)>(10**6):
-                    with open(csv_file_path_abnormalities, mode='a', newline='') as csv_file_wrapper_ab:
-                        csv_writer = csv.writer(csv_file_wrapper_ab)
-                        #csv_writer.writerow(["Time","Sum", "Average","Product","Maximum","Minimum"])
-                        csv_writer.writerow([my_ball_density])  
-                    break
+                DATA = DATA.T
+                   
             
             # Setting the propeller rotational velocities (all angular velocities are divided by 10)
             link_motor1.SetMotorFunction(chrono.ChFunction_Const(omega_8[0][0]/10))
