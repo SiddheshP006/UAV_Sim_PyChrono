@@ -26,7 +26,6 @@ class PID_controller:
         """
         #y = np.zeros((10,1)
         print("Inside the function")
-        print(y.shape)
         
         # Access odeInputs variables directly
         self.odeInputs.translational_position_error = (
@@ -77,11 +76,11 @@ class PID_controller:
         internal_state_differentiator_phi_ref_diff = self.gains_instance.A_phi_ref * state_phi_ref_diff + self.gains_instance.B_phi_ref * self.odeInputs.roll_ref
         internal_state_differentiator_theta_ref_diff = self.gains_instance.A_theta_ref * state_theta_ref_diff + self.gains_instance.B_theta_ref * self.odeInputs.pitch_ref
 
-        self.odeInputs.roll_ref_dot = np.asarray(self.gains_instance.C_phi_ref * state_phi_ref_diff).item()
-        self.odeInputs.pitch_ref_dot = np.asarray(self.gains_instance.C_theta_ref * state_theta_ref_diff).item()
+        self.roll_ref_dot = np.asarray(self.gains_instance.C_phi_ref * state_phi_ref_diff).item()
+        self.pitch_ref_dot = np.asarray(self.gains_instance.C_theta_ref * state_theta_ref_diff).item()
 
-        self.odeInputs.roll_ref_ddot = np.asarray(self.gains_instance.C_phi_ref * internal_state_differentiator_phi_ref_diff).item()
-        self.odeInputs.pitch_ref_ddot = np.asarray(self.gains_instance.C_theta_ref * internal_state_differentiator_theta_ref_diff).item()
+        self.roll_ref_ddot = np.asarray(self.gains_instance.C_phi_ref * internal_state_differentiator_phi_ref_diff).item()
+        self.pitch_ref_ddot = np.asarray(self.gains_instance.C_theta_ref * internal_state_differentiator_theta_ref_diff).item()
 
         self.angular_error = np.array(
             [
@@ -92,10 +91,10 @@ class PID_controller:
         ).reshape(3, 1)
 
         self.angular_position_ref_dot = np.array(
-            [self.odeInputs.roll_ref_dot, self.odeInputs.pitch_ref_dot, self.odeInputs.yaw_ref_dot]
+            [self.roll_ref_dot, self.pitch_ref_dot, self.odeInputs.yaw_ref_dot]
         ).reshape(3, 1)
         self.angular_position_ref_ddot = np.array(
-            [self.odeInputs.roll_ref_ddot, self.odeInputs.pitch_ref_ddot, self.odeInputs.yaw_ref_ddot]
+            [self.roll_ref_ddot, self.pitch_ref_ddot, self.odeInputs.yaw_ref_ddot]
         ).reshape(3, 1)
 
         Jacobian_matrix_inverse = np.matrix(

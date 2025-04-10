@@ -929,7 +929,7 @@ def WrapperMain_function(target_folder, controller_type, wrapper_control_paramet
     T_list = [['Time [s]', 'Thrust Motor 1 [N]', 'Thrust Motor 2 [N]', 'Thrust Motor 3 [N]', 'Thrust Motor 4 [N]',
                     'Thrust Motor 5 [N]', 'Thrust Motor 6 [N]', 'Thrust Motor 7 [N]', 'Thrust Motor 8 [N]']]
     
-    size_DATA = 47
+    size_DATA = 103
     DATA = np.zeros((size_DATA,1))
     
     # # Collision report
@@ -1429,10 +1429,10 @@ def WrapperMain_function(target_folder, controller_type, wrapper_control_paramet
                 DATA_vector[41] = pid_instance.u4
                 DATA_vector[42] = roll_ref   # roll desired
                 DATA_vector[43] = pitch_ref   #pitch desired
-                DATA_vector[44] = roll_ref_dot  #roll_dot desired
-                DATA_vector[45] = pitch_ref_dot   #pitch_dot desired
-                DATA_vector[46] = roll_ref_ddot  #roll_dot_dot desired
-                DATA_vector[47] = pitch_ref_ddot  #pitch_dot_dot desired
+                DATA_vector[44] = pid_instance.roll_ref_dot  #roll_dot desired
+                DATA_vector[45] = pid_instance.pitch_ref_dot   #pitch_dot desired
+                DATA_vector[46] = pid_instance.roll_ref_ddot  #roll_dot_dot desired
+                DATA_vector[47] = pid_instance.pitch_ref_ddot  #pitch_dot_dot desired
                 DATA_vector[48] = float('NaN')   #roll_dot
                 DATA_vector[49] = float('NaN')   #pitch_dot
                 DATA_vector[50] = float('NaN')   #yaw_dot

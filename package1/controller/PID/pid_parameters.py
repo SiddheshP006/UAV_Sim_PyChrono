@@ -29,7 +29,7 @@ class PID_parameters:
     # Number of states to be integrated by RK4
     self.number_of_states = 10
     # Length of the array vector that will be exported 
-    self.size_DATA = 47 
+    self.size_DATA = 103 
 
     # **Translational** PID gains 
     self.KP_tran = np.matrix(1 * np.diag([5,5,6]))

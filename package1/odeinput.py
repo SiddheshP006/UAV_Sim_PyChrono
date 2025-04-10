@@ -17,8 +17,7 @@ class ode_inputs:
         
         self.roll = euler_angles[0]
         self.pitch = euler_angles[1]
-        #self.yaw = euler_angles[2]
-        self.yaw=0
+        self.yaw = euler_angles[2]
         
         self.yaw_ref = yaw_ref
         self.yaw_ref_dot = yaw_ref_dot
