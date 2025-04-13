@@ -30,17 +30,6 @@ class PID_parameters:
     self.number_of_states = 10
     # Length of the array vector that will be exported 
     self.size_DATA = 103 
-
-    # **Translational** PID gains 
-    self.KP_tran = np.matrix(1 * np.diag([5,5,6]))
-    self.KD_tran = np.matrix(1 * np.diag([8,8,3]))
-    self.KI_tran = np.matrix(1 * np.diag([1,1,1]))
-
-    # **Rotational** PID parameters
-    self.KP_rot = np.matrix(1 * np.diag([100,100,50]))
-    self.KD_rot = np.matrix(1 * np.diag([50,50,50]))
-    self.KI_rot = np.matrix(1 * np.diag([20,20,10]))
-
     # ----------------------------------------------------------------
     #                   Safety Mechanism Parameters
     # ----------------------------------------------------------------
