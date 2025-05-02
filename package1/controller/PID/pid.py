@@ -11,7 +11,6 @@ from package1.functions import *
 
 PI = math.pi
 
-
 class PID_controller:
     def __init__(self, gains_instance, ode_instance,flight_params_instance):
         print("PID controller CLASS")
@@ -25,7 +24,6 @@ class PID_controller:
         Defines the system of equations of the PID controller that need to be integrated.
         """
         #y = np.zeros((10,1)
-        print("Inside the function")
         
         # Access odeInputs variables directly
         self.odeInputs.translational_position_error = (
@@ -35,13 +33,13 @@ class PID_controller:
         # Reference variables for calculations
         
         state_phi_ref_diff = y[0:2]
-        print(y.shape)
+
         state_theta_ref_diff = y[2:4]
-        print(y.shape)
+    
         integral_position_tracking = y[4:7]
-        print(y.shape)
+    
         integral_angular_error = y[7:10]
-        print(y.shape)
+    
 
         """self.mu_tran = self.flight_params_instance.mass_total_estimated * (
             -self.gains_instance.KP_tran * self.odeInputs.translational_position_error

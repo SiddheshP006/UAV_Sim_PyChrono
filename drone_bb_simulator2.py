@@ -560,7 +560,7 @@ def WrapperMain_function(target_folder, controller_type, wrapper_control_paramet
     #!!!                     CHOOSE THE TRAJECTORY
     # ----------------------------------------------------------------
     
-    # trajectory_type = 'circular_trajectory'
+    trajectory_type = 'circular_trajectory'
     
     # trajectory_type = 'hover_trajectory'
     
@@ -568,7 +568,7 @@ def WrapperMain_function(target_folder, controller_type, wrapper_control_paramet
     
     #trajectory_type = 'roundedRectangle_trajectory'
     
-    trajectory_type = 'piecewisePolynomial_trajectory'
+    #trajectory_type = 'piecewisePolynomial_trajectory'
     
     # ----------------------------------------------------------------
     #                     %%%%%%%%%%%%%%%%%%%%%%
@@ -764,16 +764,16 @@ def WrapperMain_function(target_folder, controller_type, wrapper_control_paramet
     K_torque = 5e-08 # [5e-08 - 5e-10] TO BE ESTIMATED!!! Coefficent relating the propellers'torque to the square of the angular velocity. Torque = K_torque * omega^2
     
     #########################
-    # Roll filters gains (from matlab)
-    A_phi_ref = np.matrix([[-15, -225],[1, 0]])
-    B_phi_ref = np.array([[1],[0]])
-    C_phi_ref = np.matrix([225, 0])
-    D_phi_ref = 0
-    # Pitch filters gains (from matlab)
-    A_theta_ref = np.matrix([[-15, -225],[1, 0]])
-    B_theta_ref = np.array([[1],[0]])
-    C_theta_ref = np.matrix([225, 0])
-    D_theta_ref = 0
+    ## Roll filters gains (from matlab)
+    #A_phi_ref = np.matrix([[-15, -225],[1, 0]])
+    #B_phi_ref = np.array([[1],[0]])
+    #C_phi_ref = np.matrix([225, 0])
+    #D_phi_ref = 0
+    ## Pitch filters gains (from matlab)
+    #A_theta_ref = np.matrix([[-15, -225],[1, 0]])
+    #B_theta_ref = np.array([[1],[0]])
+    #C_theta_ref = np.matrix([225, 0])
+    #D_theta_ref = 0
     #########################
 
     #%% Controller gains and TYPE
@@ -940,7 +940,6 @@ def WrapperMain_function(target_folder, controller_type, wrapper_control_paramet
     date = datetime.datetime.now()
     
     start_simulation_time = time.time() # Time acquired in order to measure the execution time of the simulation
-    
 
     # Simulation loop
     while my_system.GetChTime()<max_simulation_time:
@@ -1004,6 +1003,8 @@ def WrapperMain_function(target_folder, controller_type, wrapper_control_paramet
         ##################################################################################################################################################################################
              
         ################ Build lists to export data ################
+        #my_system.DoStepDynamics(m_timestep)
+        
         time_now = my_system.GetChTime() # Time "inside" the simulation
         times.append(time_now)
         
@@ -1284,7 +1285,6 @@ def WrapperMain_function(target_folder, controller_type, wrapper_control_paramet
             # You can add other headers for other controller types here
             pass
             
-        
         #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
   
         if (time_now > controller_start_time): #0.1
@@ -1293,9 +1293,7 @@ def WrapperMain_function(target_folder, controller_type, wrapper_control_paramet
             
             if controller_type == 'PID':
                 # Integrating the ODEs through RK4 for PID controller
-                
                 yout = rk4.rk4singlestep(pid_instance.ode, m_timestep, time_now, yin,ode_instance)
-
                 
                 Y_list = np.append(Y_list,np.resize(yout,(number_of_states,1)), axis=1)
                 yin = yout
@@ -1399,11 +1397,11 @@ def WrapperMain_function(target_folder, controller_type, wrapper_control_paramet
                 
                 ############################## PID ###############################
                 DATA_vector = np.zeros((size_DATA,1))
-                DATA_vector[0] = simulation_time                            # 1. Initial timestamp
-                DATA_vector[1] = time_now                     # 2. Current time
-                DATA_vector[2:5] = translational_position_in_I_user    # 3–5. User-defined position x, y, z
-                DATA_vector[5:8] = translational_velocity_in_I_user    # 6–8. User-defined velocity x, y, z
-                DATA_vector[8:11] = translational_acceleration_in_I_user # 9–11. User-defined acceleration x, y, z
+                DATA_vector[0] = time_now                            # 1. Initial timestamp
+                DATA_vector[1] = simulation_time                   # 2. Current time
+                DATA_vector[2:5] = ode_instance.translational_position_in_I_user # 3–5. User-defined position x, y, z
+                DATA_vector[5:8] = ode_instance.translational_velocity_in_I_user    # 6–8. User-defined velocity x, y, z
+                DATA_vector[8:11] = ode_instance.translational_acceleration_in_I_user # 9–11. User-defined acceleration x, y, z
                 DATA_vector[11] = yaw_ref                                # 12. User-defined yaw yaw ref goes here
                 DATA_vector[12] = yaw_ref_dot                          # 13. User-defined yaw_dot
                 DATA_vector[13] = yaw_ref_ddot                         # 14. User-defined yaw_dot_dot
@@ -1420,9 +1418,9 @@ def WrapperMain_function(target_folder, controller_type, wrapper_control_paramet
                 DATA_vector[32] = float('NaN')  #mu tran raw x
                 DATA_vector[33] = float('NaN') #mu tran raw y
                 DATA_vector[34] = float('NaN') #mu tran raw z
-                DATA_vector[35] = mu_x
-                DATA_vector[36] = mu_y
-                DATA_vector[37] = mu_z
+                DATA_vector[35] = pid_instance.mu_x
+                DATA_vector[36] = pid_instance.mu_y
+                DATA_vector[37] = pid_instance.mu_z
                 DATA_vector[38] = pid_instance.u1
                 DATA_vector[39] = pid_instance.u2
                 DATA_vector[40] = pid_instance.u3
@@ -1565,8 +1563,8 @@ def WrapperMain_function(target_folder, controller_type, wrapper_control_paramet
         
         
         # Print data to Console -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-        #print ('\nSimulation time: ', time_now)
-        print('Time the simulation is taking: ', '%.4f'%simulation_time)
+        print ('\nSimulation time: ', time_now)
+        #print('Time the simulation is taking: ', '%.4f'%simulation_time)
         print_cosole_flag = False
         if (print_cosole_flag):
     
