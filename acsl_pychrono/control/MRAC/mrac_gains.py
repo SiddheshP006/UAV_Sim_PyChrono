@@ -32,23 +32,23 @@ class MRACGains:
     self.KD_tran_PD_baseline = np.matrix(1 * np.diag([8,8,3]))
 
     # **Rotational** baseline parameters
-    # self.KP_rot = np.matrix(1e2 * np.diag([1,1,0.5]))
-    # self.KP_rot = np.matrix(5e1 * np.diag([0.1,0.1,0.5]))
-    self.KP_rot = np.matrix(5e1 * np.diag([0.05,0.05,0.5]))
+    # self.KP_rot = np.matrix(5e1 * np.diag([0.05,0.05,0.5]))
     # self.KI_rot = np.matrix(1e2 * np.diag([1,1,1]))
-    self.KI_rot = np.matrix(1e2 * np.diag([1,1,1]))
+    self.KP_rot = np.matrix(1 * np.diag([100,100,50]))
+    self.KI_rot = np.matrix(0 * np.diag([0,0,0]))
 
     # **Rotational** parameters for the PI baseline controller (Moment_baseline_PI)       
-    # self.KP_rot_PI_baseline = np.matrix(40 * np.diag([1,1,1]))
+    # self.KP_rot_PI_baseline = np.matrix(200 * np.diag([1,1,0.3]))
     # self.KD_rot_PI_baseline = np.matrix(0 * np.diag([1,1,0.5]))
-    # self.KI_rot_PI_baseline = np.matrix(1e-1 * np.diag([1,1,0.5]))
-    self.KP_rot_PI_baseline = np.matrix(200 * np.diag([1,1,0.3]))
+    # self.KI_rot_PI_baseline = np.matrix(1e2 * np.diag([10,10,0.5]))
+    self.KP_rot_PI_baseline = np.matrix(40 * np.diag([1,1,0.5]))
     self.KD_rot_PI_baseline = np.matrix(0 * np.diag([1,1,0.5]))
-    self.KI_rot_PI_baseline = np.matrix(1e2 * np.diag([10,10,0.5]))
+    self.KI_rot_PI_baseline = np.matrix(0.1 * np.diag([1,1,0.5]))
 
-    # self.K_P_omega_ref = np.matrix(1.5e-1 * np.diag([5,5,10]))
-    self.K_P_omega_ref = np.matrix(1.5e0 * np.diag([50,50,10]))
-    self.K_I_omega_ref = np.matrix(1e2 * np.diag([1,1,1]))
+    # self.K_P_omega_ref = np.matrix(1.5e0 * np.diag([50,50,10]))
+    # self.K_I_omega_ref = np.matrix(1e2 * np.diag([1,1,1]))
+    self.K_P_omega_ref = np.matrix(1.5e-1 * np.diag([5,5,10]))
+    self.K_I_omega_ref = np.matrix(0 * np.diag([0,0,0]))
 
     # ----------------------------------------------------------------
     #                   Translational Parameters MRAC
@@ -99,17 +99,17 @@ class MRACGains:
     self.B_ref_rot = np.matrix(np.eye(3))
 
     # **Rotational** parameters Lyapunov equation
-    # self.Q_rot = np.matrix(7e-3 * np.diag([1,1,2]))
-    self.Q_rot = np.matrix(7e-3 * np.diag([2,2,2]))
+    # self.Q_rot = np.matrix(7e-3 * np.diag([2,2,2]))
+    self.Q_rot = np.matrix(7e-3 * np.diag([1,1,1]))
     self.P_rot = np.matrix(linalg.solve_continuous_lyapunov(self.A_ref_rot.T, -self.Q_rot))
 
     # **Rotational** adaptive parameters
-    # self.Gamma_x_rot = np.matrix(1e1 * np.diag([1,1,10])) # Adaptive rates
-    # self.Gamma_r_rot = np.matrix(1e-4 * np.diag([1,1,1])) # Adaptive rates
-    # self.Gamma_Theta_rot = np.matrix(1e0 * np.diag([1,1,1,1,1,1])) # Adaptive rates
-    self.Gamma_x_rot = np.matrix(1e4 * np.diag([1,1,1])) # Adaptive rates
-    self.Gamma_r_rot = np.matrix(1e1 * np.diag([1,1,1])) # Adaptive rates
-    self.Gamma_Theta_rot = np.matrix(1e2 * np.diag([1,1,1,1,1,1])) # Adaptive rates
+    # self.Gamma_x_rot = np.matrix(1e4 * np.diag([1,1,1])) # Adaptive rates
+    # self.Gamma_r_rot = np.matrix(1e1 * np.diag([1,1,1])) # Adaptive rates
+    # self.Gamma_Theta_rot = np.matrix(1e2 * np.diag([1,1,1,1,1,1])) # Adaptive rates
+    self.Gamma_x_rot = np.matrix(1e1 * np.diag([1,1,1])) # Adaptive rates
+    self.Gamma_r_rot = np.matrix(1e-4 * np.diag([1,1,1])) # Adaptive rates
+    self.Gamma_Theta_rot = np.matrix(1e0 * np.diag([1,1,1,1,1,1])) # Adaptive rates
     
     # ----------------------------------------------------------------
     #                   Safety Mechanism Parameters

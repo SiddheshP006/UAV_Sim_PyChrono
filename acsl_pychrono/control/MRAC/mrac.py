@@ -8,7 +8,7 @@ from acsl_pychrono.control.control import Control
 from acsl_pychrono.control.base_mrac import BaseMRAC
 from acsl_pychrono.control.MRAC.m_mrac import M_MRAC
 
-class MRAC(M_MRAC, BaseMRAC, Control):
+class MRAC(BaseMRAC, Control):
   def __init__(self, gains: MRACGains, ode_input: OdeInput, flight_params: FlightParams, timestep: float):
     super().__init__(odein=ode_input)
     self.gains = gains
@@ -65,10 +65,18 @@ class MRAC(M_MRAC, BaseMRAC, Control):
     self.mu_tran_raw = self.computeMuRawOuterLoop()
 
     # Precompute e^T*P*B for outer loop
-    eTranspose_P_B_tran = self.compute_eTransposePB_OuterLoop()
+    eTranspose_P_B_tran = M_MRAC.compute_eTransposePB(self.e_tran, self.gains.P_tran, self.gains.B_tran)
     
     # Outer Loop Adaptive Laws
-    self.computeAllAdaptiveLawsOuterLoop(eTranspose_P_B_tran)
+    (self.K_hat_x_tran_dot,
+     self.K_hat_r_tran_dot,
+     self.Theta_hat_tran_dot
+    ) = M_MRAC.computeAllAdaptiveLaws(
+      self.gains.Gamma_x_tran, self.x_tran,
+      self.gains.Gamma_r_tran, self.r_tran,
+      self.gains.Gamma_Theta_tran, self.Phi_adaptive_tran_augmented,
+      eTranspose_P_B_tran
+    )
 
     # Outer Loop Safety Mechanism
     self.mu_x, self.mu_y, self.mu_z = self.safety_mechanism.apply(self.mu_tran_raw)
@@ -129,10 +137,18 @@ class MRAC(M_MRAC, BaseMRAC, Control):
     ) = self.computeRegressorVectorInnerLoop()
 
     # Precompute e^T*P*B for inner loop
-    eTranspose_P_B_rot = self.compute_eTransposePB_InnerLoop()
+    eTranspose_P_B_rot = M_MRAC.compute_eTransposePB(self.e_rot, self.gains.P_rot, self.gains.B_rot)
 
     # Inner Loop Adaptive Laws
-    self.computeAllAdaptiveLawsInnerLoop(eTranspose_P_B_rot)
+    (self.K_hat_x_rot_dot,
+     self.K_hat_r_rot_dot,
+     self.Theta_hat_rot_dot
+    ) = M_MRAC.computeAllAdaptiveLaws(
+      self.gains.Gamma_x_rot, self.odein.angular_velocity,
+      self.gains.Gamma_r_rot, self.r_rot,
+      self.gains.Gamma_Theta_rot, self.Phi_adaptive_rot_augmented,
+      eTranspose_P_B_rot
+    )
 
     self.Moment_baseline = self.computeMomentBaselineInnerLoop()
 

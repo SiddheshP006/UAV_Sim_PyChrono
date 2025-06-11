@@ -8,53 +8,30 @@ class M_MRAC:
 
     return K_hat_state_dot
   
-  def reshapeAdaptiveGainsToMatrices(self):
+  @ staticmethod
+  def compute_eTransposePB(e, P, B):
+    eTranspose_P_B = e.T * P * B
+    return eTranspose_P_B
+
+  @staticmethod
+  def computeAllAdaptiveLaws(
+    Gamma_x,
+    x,
+    Gamma_r,
+    r,
+    Gamma_Theta,
+    Phi_regressor_vector,
+    eTranspose_P_B
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
-    Reshapes all gain parameters to their correct (row, col) shape and converts them to np.matrix.
-    This is intended to be called once after loading or updating gains stored as flat arrays.
+    Compute all the classical MRAC adaptive laws
+
+    Returns:
+      - (K_hat_x_dot, K_hat_r_dot, Theta_hat_dot)
     """
-    self.K_hat_x_tran = np.matrix(self.K_hat_x_tran.reshape(6,3))
-    self.K_hat_r_tran = np.matrix(self.K_hat_r_tran.reshape(3,3))
-    self.Theta_hat_tran = np.matrix(self.Theta_hat_tran.reshape(6,3))
-    self.K_hat_x_rot = np.matrix(self.K_hat_x_rot.reshape(3,3))
-    self.K_hat_r_rot = np.matrix(self.K_hat_r_rot.reshape(3,3))
-    self.Theta_hat_rot = np.matrix(self.Theta_hat_rot.reshape(6,3))
 
-  def compute_eTransposePB_OuterLoop(self):
-    eTranspose_P_B_tran = self.e_tran.T * self.gains.P_tran * self.gains.B_tran
+    K_hat_x_dot = M_MRAC.computeAdaptiveLaw(-Gamma_x, x, eTranspose_P_B)
+    K_hat_r_dot = M_MRAC.computeAdaptiveLaw(-Gamma_r, r, eTranspose_P_B)
+    Theta_hat_dot = M_MRAC.computeAdaptiveLaw(Gamma_Theta, Phi_regressor_vector, eTranspose_P_B)
 
-    return eTranspose_P_B_tran
-
-  def computeAllAdaptiveLawsOuterLoop(self, eTranspose_P_B_tran):
-    self.K_hat_x_tran_dot = self.computeAdaptiveLaw(
-      -self.gains.Gamma_x_tran,
-      self.x_tran,
-      eTranspose_P_B_tran
-    )
-    self.K_hat_r_tran_dot = self.computeAdaptiveLaw(
-      -self.gains.Gamma_r_tran,
-      self.r_tran,
-      eTranspose_P_B_tran
-    )
-    self.Theta_hat_tran_dot = self.computeAdaptiveLaw(
-      self.gains.Gamma_Theta_tran,
-      self.Phi_adaptive_tran_augmented,
-      eTranspose_P_B_tran
-    )
-
-  def computeAllAdaptiveLawsInnerLoop(self, eTranspose_P_B_rot):
-    self.K_hat_x_rot_dot = self.computeAdaptiveLaw(
-      -self.gains.Gamma_x_rot,
-      self.odein.angular_velocity,
-      eTranspose_P_B_rot
-    )
-    self.K_hat_r_rot_dot = self.computeAdaptiveLaw(
-      -self.gains.Gamma_r_rot,
-      self.r_rot,
-      eTranspose_P_B_rot
-    )
-    self.Theta_hat_rot_dot = self.computeAdaptiveLaw(
-      self.gains.Gamma_Theta_rot,
-      self.Phi_adaptive_rot_augmented,
-      eTranspose_P_B_rot
-    )
+    return (K_hat_x_dot, K_hat_r_dot, Theta_hat_dot)

@@ -7,6 +7,18 @@ from acsl_pychrono.simulation.flight_params import FlightParams
 from acsl_pychrono.control.control import Control
 
 class BaseMRAC():  
+  def reshapeAdaptiveGainsToMatrices(self):
+    """
+    Reshapes all gain parameters to their correct (row, col) shape and converts them to np.matrix.
+    This is intended to be called once after loading or updating gains stored as flat arrays.
+    """
+    self.K_hat_x_tran = np.matrix(self.K_hat_x_tran.reshape(6,3))
+    self.K_hat_r_tran = np.matrix(self.K_hat_r_tran.reshape(3,3))
+    self.Theta_hat_tran = np.matrix(self.Theta_hat_tran.reshape(6,3))
+    self.K_hat_x_rot = np.matrix(self.K_hat_x_rot.reshape(3,3))
+    self.K_hat_r_rot = np.matrix(self.K_hat_r_rot.reshape(3,3))
+    self.Theta_hat_rot = np.matrix(self.Theta_hat_rot.reshape(6,3))
+
   def computeTrajectoryTrackingErrors(self, odein: OdeInput):
     """
     Computes translational and rotational tracking errors and extracts the reference position.
@@ -159,11 +171,6 @@ class BaseMRAC():
                                                      [Phi_adaptive_rot]]))
     
     return Phi_adaptive_rot, Phi_adaptive_rot_augmented
-  
-  def compute_eTransposePB_InnerLoop(self):
-    eTranspose_P_B_rot = self.e_rot.T * self.gains.P_rot * self.gains.B_rot
-
-    return eTranspose_P_B_rot
   
   def computeMomentBaselineInnerLoop(self):
     Moment_baseline = np.cross(
