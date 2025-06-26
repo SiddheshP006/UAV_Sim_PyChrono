@@ -41,6 +41,7 @@ class MRAC(BaseMRAC, Control):
     self.integral_e_rot = self.y[97:100] # Integral of 'e_rot' = (angular_velocity - omega_ref) 
     self.integral_angular_error = self.y[100:103] # Integral of angular_error = attitude - attitude_ref
     self.integral_e_omega_ref_cmd = self.y[103:106] #Integral of (omega_ref - omega_cmd)
+    self.integral_position_error= self.y[106:109] #Integral of (self.odein.translational_position_in_I - self.translational_position_in_I_ref)
 
     # Reshapes all adaptive gains to their correct (row, col) shape as matrices
     self.reshapeAdaptiveGainsToMatrices()
@@ -53,6 +54,8 @@ class MRAC(BaseMRAC, Control):
     self.x_ref_tran_dot = self.computeReferenceModelOuterLoop()
 
     self.mu_PD_baseline_tran = self.computeMuPDbaselineOuterLoop()
+
+    self.mu_PID_baseline_tran = self.computeMuPIDbaselineOuterLoop()
 
     (self.Phi_adaptive_tran_augmented,
      self.Theta_tran_adaptive_bar_augmented
@@ -182,5 +185,6 @@ class MRAC(BaseMRAC, Control):
     self.dy[97:100] = self.odein.angular_velocity - self.omega_ref
     self.dy[100:103] = self.angular_error
     self.dy[103:106] = self.omega_ref - self.omega_cmd
+    self.dy[106:109]= self.odein.translational_position_in_I - self.translational_position_in_I_ref
 
     return np.array(self.dy)

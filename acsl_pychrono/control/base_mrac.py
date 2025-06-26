@@ -62,6 +62,16 @@ class BaseMRAC():
 
     return mu_PD_baseline_tran
   
+  def computeMuPIDbaselineOuterLoop(self):
+    mu_PID_baseline_tran = -self.gains.mass_total_estimated * (
+      self.gains.KP_tran_PD_baseline * (self.odein.translational_position_in_I - self.translational_position_in_I_ref)
+      + self.gains.KD_tran_PD_baseline * (self.odein.translational_velocity_in_I - self.x_ref_tran[3:6])
+      +self.gains.KI_tran_PD_baseline * self.integral_position_error
+      - self.x_ref_tran_dot[3:6]
+    )
+
+    return mu_PID_baseline_tran
+  
   def computeRegressorVectorAndThetaBarOuterLoop(self):
     # Compute rotation matrices
     (R_from_loc_to_glob,

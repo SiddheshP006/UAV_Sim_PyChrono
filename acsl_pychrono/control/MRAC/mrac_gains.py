@@ -14,7 +14,7 @@ class MRACGains:
     self.drag_coefficient_matrix_estimated = flight_params.drag_coefficient_matrix_estimated
 
     # Number of states to be integrated by RK4
-    self.number_of_states = 106
+    self.number_of_states = 109
     # Length of the array vector that will be exported 
     self.size_DATA = 92
 
@@ -30,6 +30,7 @@ class MRACGains:
     # **Translational** parameters for the PD baseline controller (mu_PD_baseline_tran)
     self.KP_tran_PD_baseline = np.matrix(1 * np.diag([5,5,6]))
     self.KD_tran_PD_baseline = np.matrix(1 * np.diag([8,8,3]))
+    self.KI_tran_PD_baseline = np.matrix(1 * np.diag([1,1,0.1]))
 
     # **Rotational** baseline parameters
     # self.KP_rot = np.matrix(5e1 * np.diag([0.05,0.05,0.5]))
